@@ -2,7 +2,7 @@
 (define collection "bs")
 (define version "1.0")
 
-(define scribblings '(("scribblings/bs.scrbl" (multi-page))))
+(define scribblings '(("scribblings/bs.scrbl")))
 (define deps '("base"
                "brag"
                "crypto-lib"

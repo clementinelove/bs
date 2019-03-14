@@ -153,6 +153,7 @@
          "data size specifier should specify size in between 0 and ~s bytes (both inclusive)"
          upperbound))
 
+;; the error below usually do not signal errors but mark transaction state as #f
 (define (report-pushdata-error size actual-size)
   (error 'OP_PUSHDATA
          "specified size (~s bytes) is not equal to the actual size of data being pushed (~s bytes)"
