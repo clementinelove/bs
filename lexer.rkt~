@@ -1,0 +1,72 @@
+#lang racket/base
+(require parser-tools/lex
+         racket/contract/base
+         openssl/sha1)
+
+;; check: http://matt.might.net/articles/lexers-in-racket/ 
+
+;;; Bitcoin Script Lexer
+
+(define bs-lexer
+  (lexer
+
+   ;; skip whitespaces
+   [whitespace (bs-lexer input-port)]
+
+   ;; OP_PUSHDATAn
+   #;
+   [(concatenation "OP_PUSHDATA"
+                   (union (char-range #\0 #\4)))
+    (cons `(OP_PUSHDATA ,(string->symbol lexeme)) (bs-lexer input-port))]
+   
+   ;; op_codes 
+   [(concatenation (union #\O #\o)
+                   (union #\P #\p)
+                   #\_
+                   (repetition 1 +inf.0 (union (char-range #\0 #\9)
+                                               (char-range #\A #\Z)
+                                               (char-range #\a #\z))))
+    (cons `(OP_CODE ,(string->symbol lexeme)) (bs-lexer input-port))]
+
+   ;; decimal number
+   [(repetition 1 +inf.0 (char-range #\0 #\9))
+    (cons `(DEC ,(string->number lexeme)) (bs-lexer input-port))]
+   
+   ;; hexadecimal number (using bytes representation)
+   [(concatenation "0x" (repetition 1 +inf.0 (union (char-range #\0 #\9)
+                                                    (char-range #\A #\F)
+                                                    (char-range #\a #\f))))
+    (cons `(HEX ,(hex-string->bytes (substring lexeme 2)))
+          (bs-lexer input-port))]
+
+   ;; c-style comment
+   [(concatenation #\/ #\*)
+    (comment-lexer input-port)]
+   
+   ;; end-of-file
+   [(eof) '()]))
+
+(define comment-lexer
+  (lexer
+   [(concatenation #\* #\/)
+    (bs-lexer input-port)]
+   [any-char
+    (comment-lexer input-port)]))
+
+;; test-lex: String -> listof(list)
+;; test the lexer using the given string as input string.
+;; EXAMPLE: (test-lex "OP_PUSHDATA 1 0x12")
+(define (test-lex str)
+  (bs-lexer (open-input-string str)))
+
+#;
+(test-lex "OP_PUSHDATA1 4 0x01020304")
+
+#;
+(test-lex "OP_PUSHDATA1 1 0x02
+           OP_PUSHDATA1 1 0x03
+           OP_ADD")
+
+(provide/contract
+ [bs-lexer (-> (and/c input-port? string-port?) (listof pair?))]
+ [test-lex (-> string? (listof pair?))])

@@ -1,0 +1,4 @@
+#lang racket/base
+(module reader bs
+  (require "reader.rkt")
+  (provide read-syntax))

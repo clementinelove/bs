@@ -1,0 +1,135 @@
+#lang racket/base
+(require "opcodes.rkt"
+         ;"tokenizer.rkt"
+         ;"parser.rkt"
+         "utils.rkt"
+         (for-syntax racket/base)
+         (for-syntax syntax/parse))
+
+(provide ;handle-args
+ ;(all-from-out "opcodes.rkt")
+ (all-from-out "opcodes.rkt"))
+
+(define-syntax-rule (bs-module-begin expr)
+  (#%module-begin
+   expr))
+#;
+(define-syntax-rule (bs-top-interaction . expr)
+  (parse #f (tokenize in #f)))
+
+(provide (rename-out [bs-module-begin #%module-begin])
+         ;(rename-out [bs-top-interaction #%top-interaction])
+         #%top-interaction
+         #%app #%datum)
+;; TODO: 
+;;       The repl also doesn't work well, so a interactive mode also need to be provided.
+
+(define (display-stack stk)
+  (letrec ([helper
+            (λ (s)
+              (if (null? s)
+                  (displayln "--- STACK BOT ---\n")
+                  (begin
+                    (displayln (car s))
+                    (helper (cdr s)))))])
+    (displayln "--- STACK TOP ---")
+    (helper (map (λ (bs)
+                   (if (= 0 (bytes-length bs))
+                       "NULL"
+                       (string-append "0x" (bytes->hex-string bs))))
+                 (stack->list stk)))))
+
+
+(provide display-stack)
+
+(define (report-invalid-transaction reason)
+  (displayln (string-append "Invalid: " reason)))
+
+(define (report-valid-transaction)
+  (displayln  "OK: top stack item is a non-zero value"))
+
+(define FOUR-BYTE-INT-BOUND (/ (expt 256 4) 2)) ;; no op input should take a decimal of total 4 byte
+
+(define (handle-args . args)
+  (for/fold ([sm (s-machine (empty-stack) (empty-stack) #t '())]
+             #:result
+             (let ([main-stk (s-machine-main-stk sm)]
+                   [level (s-machine-level sm)]
+                   [tran-state (s-machine-tran-state sm)])
+               (cond
+                 [(not (null? level))
+                  (report-invalid-transaction "unbalanced OP_IF exist")]
+                 [(not tran-state)
+                  (report-invalid-transaction "this transaction was being marked as invalid")]
+                 [(stack-empty? main-stk)
+                  (report-invalid-transaction "stack is empty after executing script")]
+                 [else
+                  (let ([top-item (top main-stk)])
+                    (display-stack main-stk)
+                    (if (= (bytes->integer top-item) 0)
+                        (report-invalid-transaction "top stack item is 0 executing script")
+                        (report-valid-transaction)))]))
+             ;; TODO: just for test: show the current state of the stack
+             )
+            ([op (in-list args)])
+    #:break (not (s-machine-tran-state sm))
+    #;(displayln (s-machine-level sm)) ; DEBUG: show current level
+    (if (or (null? (s-machine-level sm))
+            (not (car (s-machine-level sm))))
+        ;; when (s-machine-level sm) is empty, execute any command since it's not in an OP_IF block
+        ;; when it's not empty, check (car (s-machine-level sm)): if it's #f then do execute
+        (begin
+          #;
+          (with-handlers ([exn:fail?
+                           (λ (e)
+                             (let* ([exn-msg (exn-message e)]
+                                    [sym-and-msg (string-split exn-msg #rx": ")]
+                                    [sym (string->symbol (car sym-and-msg))]
+                                    [msg (cadr sym-and-msg)])
+                               (raise-syntax-error sym msg op)))])
+            ((syntax-e op) sm))
+          ;; use below exp for debugging 
+          ((syntax-e op) sm))
+        ;; when level stack is not emtpy and (top (s-machine-level sm)) => #t
+        ;; which means skip current command until OP_ELSE or OP_ENDIF
+        (if (skipping-executable? op)
+            ((syntax-e op) sm)
+            sm))))
+
+
+;; =======================
+;;   Syntax Transformers
+;; =======================
+
+(provide bs-program
+         pushdata-stat
+         size)
+
+;; Every stat/op will be put back into syntax objects with their source location,
+;; for error report.
+(define-syntax bs-program
+  (λ (stx)
+    (syntax-parse stx
+      [(bs-program stat/op ...)
+       #;
+       (unless (identifier? #'name)
+         (raise-syntax-error 'form
+                             "expected an identifier for the form"
+                             #'name))
+       #'(handle-args (datum->syntax #f stat/op #'stat/op) ...)])))
+
+;; TODO: provide syntax check and error report
+;;       take care of checking with `size' and `data'
+(define-syntax pushdata-stat 
+  (syntax-rules ()
+    [(pushdata-stat op size data)
+     (λ (sm)
+       (let ([old-main-stk (s-machine-main-stk sm)])
+         (struct-copy s-machine sm [main-stk (push old-main-stk (hex-string->bytes data))])))]
+    [(pushdata-stat size data)
+     (λ (sm)
+       (let ([old-main-stk (s-machine-main-stk sm)])
+         (struct-copy s-machine sm [main-stk (push old-main-stk (hex-string->bytes data))])))]))
+
+(define-syntax-rule (size v)
+  v)

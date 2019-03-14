@@ -1,0 +1,1 @@
+("7.2" racket ("d8083a32707b478dc2a460f747753bd61ea30522" . "6b10cfd4f78bc05c22880976f224f8417bffc471") (collects #"openssl" #"sha1.rkt") (collects #"parser-tools" #"lex-sre.rkt") (collects #"parser-tools" #"lex.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
