@@ -26,22 +26,27 @@
 
 ;(define draw-stack)
 
-(define (display-stack stk)
+(define (display-stack stk stk-name)
   (letrec ([helper
             (λ (s)
               (if (null? s)
-                  (displayln "--- MAIN STACK BOT ---\n")
+                  (displayln (string-append "--- " (string-upcase stk-name) " BOT ---\n"))
                   (begin
                     (displayln (car s))
                     (helper (cdr s)))))])
-    (displayln "--- MAIN STACK TOP ---")
+    (displayln (string-append "--- " (string-upcase stk-name) " TOP ---"))
     (helper (map (λ (bs)
                    (if (= 0 (bytes-length bs))
                        "NULL"
                        (string-append "0x" (bytes->hex-string bs))))
                  (stack->list stk)))))
 
-(provide display-stack)
+(define (display-s-machine sm)
+  (display-stack (s-machine-main-stk sm) "main stk")
+  (let ([alt-stk (s-machine-alt-stk sm)])
+    (unless (stack-empty? alt-stk)
+      (displayln "********************\n")
+      (display-stack alt-stk "alt stk"))))
 
 (define (report-invalid-transaction reason)
   (displayln (string-append "Invalid: " reason)))
@@ -57,6 +62,7 @@
              #:result
              (begin
                (set! SM sm)
+               (display-s-machine sm)
                (let ([main-stk (s-machine-main-stk sm)]
                      [level (s-machine-level sm)]
                      [tran-state (s-machine-tran-state sm)])
@@ -69,9 +75,8 @@
                     (report-invalid-transaction "stack is empty after executing script")]
                    [else
                     (let ([top-item (top main-stk)])
-                      (display-stack main-stk)
                       (if (= (bytes->integer top-item #t #f) 0)
-                          (report-invalid-transaction "top stack item is 0 executing script")
+                          (report-invalid-transaction "top main stack item is 0 executing script")
                           (report-valid-transaction)))])))
              ;; TODO: just for test: show the current state of the stack
              )
