@@ -1,6 +1,7 @@
 #lang scribble/manual
 @(require scribble/bnf
-          (for-label bs))
+          (for-label bs)
+          #;(for-label bs/utils))
 
 @title{Script: Testing Bitcoin Riddles}
 @author{Yuhao Zhang}
@@ -11,14 +12,11 @@
 is a language used by Bitcoin's scripting system.
 It is a stack based language read from left to right. 
 
-Some opcodes needs meta data from @hyperlink["https://en.bitcoin.it/wiki/Transaction"]{transactions}
-in order to operate, like @tt{OP_CHECKSIG} and @tt{OP_MULTICHECKSIG}, etc. These opcodes
-are not supported by this implementation.
-
 @section{Basic Syntax}
 
-A @italic{script} is composed by a series of @italic{opcodes} and @italic{pushdata statements}.
+@italic{Script} is composed by a series of @italic{opcodes} and @italic{pushdata statements}.
 Both opcodes and pushdata statements are used to manipulate datas stored in a @italic{script machine}.
+Opcodes and pushdata statements are read from left to right.
 
 @subsection{Opcodes's Operand: Script Machine}
 
@@ -49,13 +47,10 @@ It can also be written in hexadecimal format, like
 
 @codeblock{0x04 0x01020304}
 
-You can also specify your pushdata statements with a special opcode: one from
+You can also specify your pushdata statements with a opcode-like @italic{size restrictor}: one from
 @tt{OP_PUSHDATA1}, @tt{OP_PUSHDATA2}, @tt{OP_PUSHDATA3} and @tt{OP_PUSHDATA4.}
 
-@codeblock|{
-  #lang bs
-  OP_PUSHDATA1 2 0x0102
-}|
+@codeblock{OP_PUSHDATA1 2 0x0102}
 
 The number followed after @tt{OP_PUSHDATA} indicates the size specifiers's size
 upper limit. For instance, with @tt{OP_PUSHDATA2} you can only specify a data with size not
@@ -65,6 +60,15 @@ should be an integer range between 0 and 65535.
 @subsection{Opcodes}
 
 Opcodes are procedures manipulating datas on the script machine.
+For example, @tt{OP_3} puts hexadecimal data @tt{0x03} as bytes onto the main stack @tt{main-stk};
+opcode @tt{OP_VERIFY} might change the transaction state @tt{tran-state}.
+Checkout @hyperlink["https://en.bitcoin.it/wiki/Script#Opcodes"]{bitcoin wiki}
+for details of different opcodes for now.
+
+@margin-note{Some opcodes needs meta data from
+ @hyperlink["https://en.bitcoin.it/wiki/Transaction"]{transactions} in order to operate,
+ like @tt{OP_CHECKSIG} and @tt{OP_MULTICHECKSIG}, etc.
+ These opcodes are not supported by this implementation.}
 
 @subsection{Summary: Grammar of Script}
 @BNF[(list @nonterm{program}
@@ -75,7 +79,7 @@ Opcodes are procedures manipulating datas on the script machine.
      (list @nonterm{expression}
            @BNF-alt[@nonterm{opcode} @nonterm{pushdata-statement}])
      (list @nonterm{pushdata-statement}
-           @BNF-seq[@litchar{pushdata-op} @nonterm{size} @nonterm{hex}]
+           @BNF-seq[@nonterm{pushdata-op} @nonterm{size} @nonterm{hex}]
            @BNF-seq[@nonterm{size} @nonterm{hex}])
      (list @nonterm{pushdata-op}
            @BNF-alt[@litchar{OP_PUSHDATA1} @litchar{OP_PUSHDATA2}]
@@ -99,3 +103,8 @@ Opcodes are procedures manipulating datas on the script machine.
      (list @nonterm{hex-alphabet}
            @BNF-alt[@litchar{A} @litchar{B} @litchar{C} @litchar{D} @litchar{E} @litchar{F}]
            @BNF-alt[@litchar{a} @litchar{b} @litchar{c} @litchar{d} @litchar{e} @litchar{f}])]
+
+@section{REPL support}
+
+Script support REPL, so you can continue your experiment with Script in
+@secref["interactions-window" #:doc '(lib "scribblings/drracket/drracket.scrbl")].
