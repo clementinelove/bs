@@ -1,12 +1,12 @@
 #lang racket/base
-(require "opcodes.rkt"
-         "utils.rkt"
+(require bs/opcodes
+         bs/utils
          racket/string
          (for-syntax racket/base)
          (for-syntax syntax/parse))
 
 (provide ;handle-args
- (all-from-out "opcodes.rkt"))
+ (all-from-out bs/opcodes))
 
 (define-syntax-rule (bs-module-begin expr)
   (#%module-begin
