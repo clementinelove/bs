@@ -1,6 +1,7 @@
 #lang racket/base
 (require bs/opcodes
          bs/utils
+         bs/setup
          racket/string
          (for-syntax racket/base)
          (for-syntax syntax/parse))
@@ -10,10 +11,14 @@
 
 (define-syntax-rule (bs-module-begin expr)
   (#%module-begin
-   expr))
+   (module configure-runtime racket/base
+     (require bs/setup)
+     (do-setup!))
+   (parameterize
+       ([current-output-port (bs-output-port)])
+     (void expr))))
 
 (provide (rename-out [bs-module-begin #%module-begin])
-         ;(rename-out [bs-top-interaction #%top-interaction])
          #%top-interaction
          #%app #%datum)
 ;; TODO: 
@@ -45,26 +50,29 @@
   (displayln  "OK: top stack item is a non-zero value"))
 
 (define FOUR-BYTE-INT-BOUND (/ (expt 256 4) 2)) ;; no op input should take a decimal of total 4 byte
-
+;; for REPL support, use side effects to remember last sm state
+(define SM (s-machine (empty-stack) (empty-stack) #t '())) 
 (define (handle-args . args)
-  (for/fold ([sm (s-machine (empty-stack) (empty-stack) #t '())]
+  (for/fold ([sm SM]
              #:result
-             (let ([main-stk (s-machine-main-stk sm)]
-                   [level (s-machine-level sm)]
-                   [tran-state (s-machine-tran-state sm)])
-               (cond
-                 [(not (null? level))
-                  (report-invalid-transaction "unbalanced OP_IF exist")]
-                 [(not tran-state)
-                  (report-invalid-transaction "this transaction was being marked as invalid")]
-                 [(stack-empty? main-stk)
-                  (report-invalid-transaction "stack is empty after executing script")]
-                 [else
-                  (let ([top-item (top main-stk)])
-                    (display-stack main-stk)
-                    (if (= (bytes->integer top-item #t #f) 0)
-                        (report-invalid-transaction "top stack item is 0 executing script")
-                        (report-valid-transaction)))]))
+             (begin
+               (set! SM sm)
+               (let ([main-stk (s-machine-main-stk sm)]
+                     [level (s-machine-level sm)]
+                     [tran-state (s-machine-tran-state sm)])
+                 (cond
+                   [(not (null? level))
+                    (report-invalid-transaction "unbalanced OP_IF exist")]
+                   [(not tran-state)
+                    (report-invalid-transaction "this transaction was being marked as invalid")]
+                   [(stack-empty? main-stk)
+                    (report-invalid-transaction "stack is empty after executing script")]
+                   [else
+                    (let ([top-item (top main-stk)])
+                      (display-stack main-stk)
+                      (if (= (bytes->integer top-item #t #f) 0)
+                          (report-invalid-transaction "top stack item is 0 executing script")
+                          (report-valid-transaction)))])))
              ;; TODO: just for test: show the current state of the stack
              )
             ([op (in-list args)])

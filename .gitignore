@@ -1,4 +1,6 @@
-docs/
+doc/
 compiled/
+scribblings/compiled/
 test.rkt
 parser-test.rkt
+*.rkt~
