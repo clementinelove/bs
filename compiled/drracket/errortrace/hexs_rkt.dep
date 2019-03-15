@@ -1,1 +1,0 @@
-("7.2" racket ("322684f9540ac86decd7b3531b4c5f69e9b24d0f" . "88a65df9560c6302ec0bd7de4f248bb220869b55") (collects #"errortrace" #"errortrace-key.rkt") (collects #"openssl" #"sha1.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt") (collects #"rackunit" #"main.rkt") (collects #"wxme" #"read.rkt"))

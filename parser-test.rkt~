@@ -1,9 +1,0 @@
-#lang racket/base
-(require "parser.rkt" "tokenizer.rkt"
-         brag/support)
-
-(parse-to-datum (apply-tokenizer-maker tokenize "OP_PUSHDATA1 71 0x30440220206fea7b21dbda9db2227c2d028d4e014c02fa1f29775eccea41fe70aeedb5aa022047e8e8d2b7983baa84a48f85ea55edfdbc5aae7001d46e2e6657a8d86c0c60d601
-OP_PUSHDATA1 33 0x033ca9b849063327597b13fa4da8c98053302118ffa4d194090d636ba22906d657
-OP_DUP OP_HASH160
-20 0x69dec09e9b32ffd447c80d413d58f0413e99208e
-OP_EQUALVERIFY"))

@@ -1,9 +1,0 @@
-#lang scribble/manual
-@(require (for-label racket/base
-                     "utils.rkt"))
-
-@defmodule[bs-kai/utils]
-@defproc[(OP_1 [sm s-machine?])
-         s-machine?]{
- Just a normal function.
-}

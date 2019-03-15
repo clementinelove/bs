@@ -1,1 +1,0 @@
-("7.2" racket ("d4991c2a842e9d60ee38fef8d6749ebb7b4d9401" . "ad30c4178a26778c073d325db15f64a74ab26b70") (collects #"brag" #"support.rkt") (collects #"bs" #"parser.rkt") (collects #"bs" #"tokenizer.rkt") (collects #"racket" #"base.rkt") (collects #"racket" #"runtime-config.rkt"))

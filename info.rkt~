@@ -1,3 +1,0 @@
-#lang info
-(define scribblings '(("bs-manual.scrbl"
-                       (multi-page))))
