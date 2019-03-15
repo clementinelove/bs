@@ -8,7 +8,7 @@
     (define (handle-query key default)
       (case key
         [(color-lexer)
-         (dynamic-require "colorer.rkt" 'color-bs)]
+         (dynamic-require 'bs/colorer 'color-bs)]
         #;[(drracket:indentation)
            (dynamic-require 'jsonic/indenter 'indent-jsonic)]
         #;[(drracket:toolbar-buttons)

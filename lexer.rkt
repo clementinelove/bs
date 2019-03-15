@@ -17,14 +17,11 @@
    ;; whitespace 
    [whitespace 'WHITESPACE]
    ;; pushdata statements
-   [(:seq "OP_PUSHDATA" (char-range #\1 #\4))
+   [(:seq "OP_PUSHDATA" (:or "1" "2" "3" "4"))
     (token-OPPUSHDATA (string->symbol lexeme))]
    ;; opcode
-   [(:seq "OP"
-          #\_
-          (:* (:or (char-range #\0 #\9)
-                   (char-range #\A #\Z)
-                   (char-range #\a #\z))))
+   [(:seq "OP_"
+          (:* alphabetic numeric))
     (token-OPCODE (string->symbol lexeme))]
    ;; decimal data
    [(:+ (char-range #\0 #\9))

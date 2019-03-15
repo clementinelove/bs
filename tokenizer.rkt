@@ -20,8 +20,7 @@
                     #:span (- (pos lexeme-end)
                               (pos lexeme-start)))]
             ;; opcode
-            [(:seq "OP"
-                   #\_
+            [(:seq "OP_"
                    (:* (:or (char-range #\0 #\9)
                             (char-range #\A #\Z)
                             (char-range #\a #\z))))
@@ -50,11 +49,12 @@
                     #:span (- (pos lexeme-end)
                               (pos lexeme-start)))]
             ;; single line # comment
-            [(from/to "#" "\n")
+            [(:: "#" (:* (:~ #\newline)))
              (next-token)]
             ;; end of file
             [(from/to "<" ">")
              (next-token)]
+            #;
             [(eof)
              (void)])])
       (bs-lexer ip)))

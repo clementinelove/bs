@@ -13,7 +13,7 @@ It is a stack based language read from left to right.
 
 Some opcodes needs meta data from @hyperlink["https://en.bitcoin.it/wiki/Transaction"]{transactions}
 in order to operate, like @tt{OP_CHECKSIG} and @tt{OP_MULTICHECKSIG}, etc. These opcodes
-are not supported by current version of @racketmodname[bs].
+are not supported by this implementation.
 
 @section{Basic Syntax}
 
@@ -42,19 +42,18 @@ format (e.g. @tt{0x0102}).
 
 For example, to push hexadecimal data @tt{0x01020304} onto the main stack, we write
 
-@verbatim{4 0x01020304}
+@codeblock{4 0x01020304}
 
 In the above example, the data size specifier is written in decimal.
 It can also be written in hexadecimal format, like
 
-@verbatim{0x04 0x01020304}
+@codeblock{0x04 0x01020304}
 
 You can also specify your pushdata statements with a special opcode: one from
-@tt{OP_PUSHDATA1}, @tt{OP_PUSHDATA2}, @tt{OP_PUSHDATA3} and @tt{OP_PUSHDATA4}.
-
-@verbatim{OP_PUSHDATA1 2 0x0102}
+@tt{OP_PUSHDATA1}, @tt{OP_PUSHDATA2}, @tt{OP_PUSHDATA3} and @tt{OP_PUSHDATA4.}
 
 @codeblock|{
+  #lang bs
   OP_PUSHDATA1 2 0x0102
 }|
 

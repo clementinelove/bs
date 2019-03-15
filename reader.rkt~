@@ -1,17 +1,14 @@
 #lang racket
 ;(require syntax/readerr)
-(require "lexer.rkt")
+(require "tokenizer.rkt"
+         "parser.rkt")
 
 (provide read-syntax)
 
 (define (read-syntax src in)
-  (let* ([parse-tree (bs-lexer in)]
+  (let* ([parse-tree (parse src (tokenize in src))]
          [module-datum `(module bs-mod "expander.rkt"
-                          (handle-args ,@parse-tree))])
+                          ,parse-tree)])
     ;(printf "~s\n" module-datum)
     (datum->syntax #f module-datum)))
-
-;; test reader using input string
-(define (test str)
-  (datum->syntax #f (bs-lexer (open-input-string str))))
 

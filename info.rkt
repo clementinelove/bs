@@ -6,8 +6,7 @@
 (define deps '("base"
                "brag"
                "crypto-lib"
-               "parser-tools-lib"
-               "syntax-color-lib"))
+               "parser-tools-lib"))
 (define build-deps '("racket-doc"
                      "rackunit-lib"
                      "scribble-lib"))
