@@ -18,13 +18,11 @@
        ([current-output-port (bs-output-port)])
      (void expr))))
 
+
+
 (provide (rename-out [bs-module-begin #%module-begin])
          #%top-interaction
          #%app #%datum)
-;; TODO: 
-;;       The repl also doesn't work well, so a interactive mode also need to be provided.
-
-;(define draw-stack)
 
 (define (display-stack stk stk-name)
   (letrec ([helper
@@ -54,9 +52,11 @@
 (define (report-valid-transaction)
   (displayln  "OK: top stack item is a non-zero value"))
 
-(define FOUR-BYTE-INT-BOUND (/ (expt 256 4) 2)) ;; no op input should take a decimal of total 4 byte
+;; no op input should take a decimal of total 4 byte
+(define FOUR-BYTE-INT-BOUND (/ (expt 256 4) 2))
 ;; for REPL support, use side effects to remember last sm state
-(define SM (s-machine (empty-stack) (empty-stack) #t '())) 
+(define SM (s-machine (empty-stack) (empty-stack) #t '()))
+
 (define (handle-args . args)
   (for/fold ([sm SM]
              #:result
@@ -88,7 +88,7 @@
         ;; when (s-machine-level sm) is empty, execute any command since it's not in an OP_IF block
         ;; when it's not empty, check (car (s-machine-level sm)): if it's #f then do execute
         (begin
-          #;
+          ;#;
           (with-handlers ([exn:fail?
                            (λ (e)
                              (let* ([exn-msg (exn-message e)]
@@ -98,7 +98,7 @@
                                (raise-syntax-error sym msg op)))])
             ((syntax-e op) sm))
           ;; use below exp for debugging
-          ;#;
+          #;
           ((syntax-e op) sm))
         ;; when level stack is not emtpy and (top (s-machine-level sm)) => #t
         ;; which means skip current command until OP_ELSE or OP_ENDIF
