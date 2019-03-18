@@ -1,38 +1,49 @@
 #lang racket/base
 (require brag/support)
 
+(define-lex-abbrevs
+  [digit (:/ "0" "9")]
+  [digits (:+ digit)]
+  [hex-char (:/ "af" "AF" "09")]
+  [valid-hex-str (:: "0x" (:+ (:: hex-char hex-char)))]
+  [all-hex-str (:: "0x" (:* hex-char))]
+  [invalid-hex-str (intersection all-hex-str (complement valid-hex-str))]
+  [identifier-chars (:or "_" (:/ "AZ" "09"))]
+  [identifier (:: "OP_" (:* identifier-chars))]
+  [single-line-comment (:: "#" (:* (:~ #\newline)))]
+  [multi-line-comment (:: "<" (complement (:: any-string ">" any-string)) ">")])
+
 (define bs-lexer
   (lexer
    [(eof) (values lexeme 'eof #f #f #f)]
+
+   ["OP_1"
+    (values lexeme 'symbol #f
+            (pos lexeme-start) (pos lexeme-end))] 
    #;
-   [whitespace
-    (values lexeme 'white-space #f #f #f)]
-
-   [(:seq "OP_" (:+ (:or alphabetic numeric)))
-    (values lexeme 'symbol #f
-            (pos lexeme-start) (pos lexeme-end))]
-
-   [(:+ numeric)
-    (values lexeme 'symbol #f
-            (pos lexeme-start) (pos lexeme-end))]
-
-   [(:seq "0x" (:+ (:or numeric (char-range "A" "F") (char-range "a" "f"))))
+   [digits
     (values lexeme 'constant #f
             (pos lexeme-start) (pos lexeme-end))]
 
-   ["0x"
+   [invalid-hex-str
     (values lexeme 'error #f
             (pos lexeme-start) (pos lexeme-end))]
-   
-   [(:: "#" (:* (:~ #\newline)))
+
+   [valid-hex-str
+    (values lexeme 'constant #f
+            (pos lexeme-start) (pos lexeme-end))]
+     
+   [single-line-comment
     (values lexeme 'comment #f
             (pos lexeme-start) (pos lexeme-end))]
 
-   [(from/to "<" ">")
+   [(:: "<" (:* (:~ ">"))) ;; multi line comment
+    (values lexeme 'comment #f
+            (pos lexeme-start) (pos lexeme-end))]
+
+   [multi-line-comment
     (values lexeme 'comment
-            (if (equal? lexeme "<")
-                '|(|
-                '|)|)
+            (if (equal? lexeme "<") '|(| '|)|)
             (pos lexeme-start) (pos lexeme-end))]
    
    [any-char
@@ -42,16 +53,6 @@
 (define (color-bs port offset racket-coloring-mode?)
   (define-values (str cat paren start end)
     (bs-lexer port))
-  (values str cat paren start end 0 #f)
-  #;
-  (cond [(or (not racket-coloring-mode?) (equal? (peek-string 2 0 port) "0x"))
-         (define-values (str cat paren start end)
-           (bs-lexer port))
-         (define switch-to-racket-mode (regexp-match #px"\\s" str))
-         (values str cat paren start end 0 switch-to-racket-mode)]
-        [else
-         (define-values (str cat paren start end)
-           (racket-lexer port))
-         (values str cat paren start end 0 #t)]))
+  (values str cat paren start end 0 #f))
 
 (provide color-bs)

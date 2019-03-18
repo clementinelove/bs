@@ -61,7 +61,7 @@
 
 (define (display-s-machine sm)
   (define main-stk-lst (stack->list (s-machine-main-stk sm)))
-  (define alt-stk-lst (stack->list (s-machine-main-stk sm)))
+  (define alt-stk-lst (stack->list (s-machine-alt-stk sm)))
   (define (bytes->hex-format-str bs)
     (string-append "0x" (bytes->hex-string bs)))
   (define main-stk-hex-lst (map bytes->hex-format-str main-stk-lst))
