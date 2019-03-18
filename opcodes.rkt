@@ -1,6 +1,7 @@
 #lang racket/base
 (require racket/match
          bs/utils
+         bs/structs
          racket/contract
          racket/bool)
 

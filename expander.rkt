@@ -1,13 +1,10 @@
 #lang racket/base
-(require bs/opcodes
-         bs/utils
-         bs/setup
+(require bs/opcodes bs/utils bs/structs bs/setup bs/display
          racket/string
          (for-syntax racket/base)
          (for-syntax syntax/parse))
 
-(provide ;handle-args
- (all-from-out bs/opcodes))
+(provide (all-from-out bs/opcodes))
 
 (define-syntax-rule (bs-module-begin expr)
   (#%module-begin
@@ -18,33 +15,9 @@
        ([current-output-port (bs-output-port)])
      (void expr))))
 
-
-
 (provide (rename-out [bs-module-begin #%module-begin])
          #%top-interaction
          #%app #%datum)
-
-(define (display-stack stk stk-name)
-  (letrec ([helper
-            (λ (s)
-              (if (null? s)
-                  (displayln (string-append "--- " (string-upcase stk-name) " BOT ---\n"))
-                  (begin
-                    (displayln (car s))
-                    (helper (cdr s)))))])
-    (displayln (string-append "--- " (string-upcase stk-name) " TOP ---"))
-    (helper (map (λ (bs)
-                   (if (= 0 (bytes-length bs))
-                       "NULL"
-                       (string-append "0x" (bytes->hex-string bs))))
-                 (stack->list stk)))))
-
-(define (display-s-machine sm)
-  (display-stack (s-machine-main-stk sm) "main stk")
-  (let ([alt-stk (s-machine-alt-stk sm)])
-    (unless (stack-empty? alt-stk)
-      (displayln "********************\n")
-      (display-stack alt-stk "alt stk"))))
 
 (define (report-invalid-transaction reason)
   (displayln (string-append "Invalid: " reason)))
@@ -63,6 +36,7 @@
              (begin
                (set! SM sm)
                (display-s-machine sm)
+               (displayln "")
                (let ([main-stk (s-machine-main-stk sm)]
                      [level (s-machine-level sm)]
                      [tran-state (s-machine-tran-state sm)])
