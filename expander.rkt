@@ -41,10 +41,11 @@
                      [level (s-machine-level sm)]
                      [tran-state (s-machine-tran-state sm)])
                  (cond
-                   [(not (null? level))
-                    (report-invalid-transaction "unbalanced OP_IF exist")]
                    [(not tran-state)
                     (report-invalid-transaction "this transaction was being marked as invalid")]
+                   [(not (null? level))
+                    ;(displayln level) ;for debug
+                    (report-invalid-transaction "unbalanced OP_IF exist")]
                    [(stack-empty? main-stk)
                     (report-invalid-transaction "stack is empty after executing script")]
                    [else
@@ -74,11 +75,12 @@
           ;; use below exp for debugging
           #;
           ((syntax-e op) sm))
-        ;; when level stack is not emtpy and (top (s-machine-level sm)) => #t
+        ;; when level list is not emtpy and (top (s-machine-level sm)) => #t
         ;; which means skip current command until OP_ELSE or OP_ENDIF
-        (if (skipping-executable? op)
-            ((syntax-e op) sm)
-            sm))))
+        (let ([proc (syntax-e op)])
+          (if (skipping-executable? proc)
+              (proc sm)
+              sm)))))
 
 
 ;; =======================

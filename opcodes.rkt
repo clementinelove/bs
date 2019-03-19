@@ -5,10 +5,6 @@
          racket/contract
          racket/bool)
 
-#;
-(define disabled-ops
-  (list OP_CAT OP_SUBSTR OP_LEFT OP_RIGHT OP_SIZE OP_INVERT OP_AND OP_OR OP_XOR))
-
 ;; modify this template for defining a new procedure
 #;
 (define (OP_TEMPLATE stk alt-stk tran-state level)
@@ -141,7 +137,7 @@
 ;; ============
 
 (define (skipping-executable? v)
-  (list? (member v (list OP_ELSE OP_ENDIF))))
+  (list? (member v (list OP_ELSE OP_ENDIF OP_VERIF OP_VERNOTIF))))
 
 ;; does nothing
 (define (OP_NOP sm)
@@ -405,17 +401,6 @@
 (define (OP_SUB sm)
   (OP_BINARY_ARITH #:name 'OP_SUB - sm))
 
-(define (OP_MUL sm)
-  (OP_BINARY_ARITH #:name 'OP_MUL * sm))
-
-(define (OP_DIV sm)
-  (OP_BINARY_ARITH #:name 'OP_DIV / sm))
-
-(define (OP_MOD sm)
-  (OP_BINARY_ARITH #:name 'OP_MOD remainder sm))
-
-;; TODO: implement OP_LSHIFT and OP_RSHIFT
-
 ;; ==========
 ;; Bool Logic
 ;; ==========
@@ -429,11 +414,6 @@
 (define (bool-or v1 v2)
   (boolean->integer (or (integer->boolean v1)
                         (integer->boolean v2))))
-
-;; TODO:
-#;
-(define (bool-eq? v1 v2)
-  )
 
 (define (OP_BOOLAND sm)
   (OP_BINARY_ARITH #:name 'OP_BOOLAND bool-and sm))
@@ -502,3 +482,52 @@
 (define (OP_HASH256 sm)
   (OP_UNARY #:name 'OP_HASH256
             hash256 sm))
+
+;; =============
+;; Reserved
+;; =============
+
+(define (OP_RESERVED sm)
+  (struct-copy s-machine sm [tran-state #f]))
+
+(define (OP_VER sm)
+  (struct-copy s-machine sm [tran-state #f]))
+
+(define (OP_VERIF sm)
+  (struct-copy s-machine sm [tran-state #f]))
+
+(define (OP_VERNOTIF sm)
+  (struct-copy s-machine sm [tran-state #f]))
+
+(define (OP_RESERVED1 sm)
+  (struct-copy s-machine sm [tran-state #f]))
+
+(define (OP_RESERVED2 sm)
+  (struct-copy s-machine sm [tran-state #f]))
+
+(define (OP_NOP1 sm)
+  sm)
+
+(define (OP_NOP4 sm)
+  sm)
+
+(define (OP_NOP5 sm)
+  sm)
+
+(define (OP_NOP6 sm)
+  sm)
+
+(define (OP_NOP7 sm)
+  sm)
+
+(define (OP_NOP8 sm)
+  sm)
+
+(define (OP_NOP9 sm)
+  sm)
+
+(define (OP_NOP10 sm)
+  sm)
+
+
+
