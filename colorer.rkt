@@ -1,5 +1,6 @@
 #lang racket/base
-(require brag/support)
+(require brag/support
+         syntax-color/default-lexer)
 
 (define-lex-abbrevs
   [digit (:/ "0" "9")]
@@ -17,10 +18,10 @@
   (lexer
    [(eof) (values lexeme 'eof #f #f #f)]
 
-   ["OP_1"
+   [identifier
     (values lexeme 'symbol #f
             (pos lexeme-start) (pos lexeme-end))] 
-   #;
+   
    [digits
     (values lexeme 'constant #f
             (pos lexeme-start) (pos lexeme-end))]
@@ -50,9 +51,26 @@
     (values lexeme 'symbol #f
             (pos lexeme-start) (pos lexeme-end))]))
 
+
 (define (color-bs port offset racket-coloring-mode?)
   (define-values (str cat paren start end)
     (bs-lexer port))
-  (values str cat paren start end 0 #f))
+  (values str cat paren start end
+          (if (eof-object? str) 0 (string-length str)) ;; backup distance
+          #f))
+
+#;
+(define (color-bs port offset racket-coloring-mode?)
+  (cond
+    [(or (not racket-coloring-mode?)
+         (equal? (peek-string 2 0 port) "0x"))
+     (define-values (str cat paren start end)
+       (bs-lexer port))
+     (define switch-to-racket-mode (equal? str))
+     (values str cat paren start end 0 switch-to-racket-mode)]
+    [else
+     (define-values (str cat paren start end)
+       (default-lexer port))
+     (values str cat paren start end 0 #t)]))
 
 (provide color-bs)
