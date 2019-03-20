@@ -47,11 +47,11 @@
                     ;(displayln level) ;for debug
                     (report-invalid-transaction "unbalanced OP_IF exist")]
                    [(stack-empty? main-stk)
-                    (report-invalid-transaction "stack is empty after executing script")]
+                    (report-invalid-transaction "main stack is empty after execution")]
                    [else
                     (let ([top-item (top main-stk)])
                       (if (= (bytes->integer top-item #t #f) 0)
-                          (report-invalid-transaction "top main stack item is 0 executing script")
+                          (report-invalid-transaction "top main stack item is 0 after execution")
                           (report-valid-transaction)))])))
              ;; TODO: just for test: show the current state of the stack
              )
