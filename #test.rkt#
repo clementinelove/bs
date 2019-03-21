@@ -1,0 +1,2 @@
+#lang bs
+OP_5 OP_5 OP_ADD OP_10 OP_NUMEQUAL

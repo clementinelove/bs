@@ -65,7 +65,7 @@
   (define (bytes->hex-format-str bs)
     (if (= (bytes-length bs) 0)
         "NULL"
-        (string-append "0x" (bytes->hex-string bs))))
+        (string-append "0x" (string-upcase (bytes->hex-string bs)))))
   (define main-stk-hex-lst (map bytes->hex-format-str main-stk-lst))
   (define alt-stk-hex-lst (map bytes->hex-format-str alt-stk-lst))
   (define-values (columns header)

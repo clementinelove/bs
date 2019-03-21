@@ -34,7 +34,7 @@
   (for/fold ([sm SM]
              #:result
              (begin
-               (set! SM sm)
+               (set! SM sm) ; save s-machine state
                (display-s-machine sm)
                (displayln "")
                (let ([main-stk (s-machine-main-stk sm)]
