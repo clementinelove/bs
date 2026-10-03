@@ -4,9 +4,12 @@
 
 (define scribblings '(("scribblings/bs.scrbl")))
 
-(define deps '("base"
+(define deps '("syntax-color-lib"
+               "base"
                "brag"
                "crypto-lib"
                "parser-tools-lib"))
-(define build-deps '("rackunit-lib"
+(define build-deps '("drracket-core"
+                     "racket-doc"
+                     "rackunit-lib"
                      "scribble-lib"))
